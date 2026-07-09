@@ -12,24 +12,21 @@ export async function GET() {
     const data = yaml.load(configFile) as any;
     
     // 1. Основни подаци
-    const imenaRaw = data.hero?.imena || data.imena || "Петар & Теодора";
+    const imenaRaw = data.vencanje?.imena || data.hero?.imena || data.imena || "Петар и Теодора";
     let [ime1, ime2] = imenaRaw.split(/&| и /i).map((s: string) => s.trim());
     if (!ime2) {
       ime1 = "Петар";
       ime2 = "Теодора";
     }
     
-    let datum = data.hero?.datum || data.osnovno?.datum || data.datum || "29. Август 2027.";
+    let datum = data.vencanje?.datum_prikaz || data.hero?.datum || data.osnovno?.datum || data.datum || "29. август 2027.";
     if (datum instanceof Date) {
       datum = datum.toLocaleDateString('sr-RS');
     }
     
-    const glavniDogadjaj = data.vencanje?.lokacija || data.plan?.lokacije?.find((l: any) => l.naziv.includes('ручак') || l.naziv.includes('Сватов')) || data.plan?.lokacije[2];
-    const vreme = glavniDogadjaj?.vreme || "15:00";
-    
-    // Брисање евентуалног "С -" које се поткрало у називу локације
-    let lokacija = glavniDogadjaj?.opis || "Woodland Arena — главни улаз";
-    lokacija = lokacija.replace(/^С\s*-\s*/, ''); 
+    const lokacija = data.vencanje?.lokacija || "Woodland Arena";
+    const glavnaStavka = data.plan?.lokacije?.find((l: any) => /церемониј|венчањ/i.test(l.naziv || '')) || data.plan?.lokacije?.[1];
+    const vreme = glavnaStavka?.vreme || "16:00";
 
     let poruka_potvrde = data.interakcija?.poruka_potvrde || "Молимо Вас да потврдите долазак попуњавањем форме на позивници онлајн.";
 
