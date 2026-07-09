@@ -26,7 +26,7 @@ const { data, imena } = Astro.props;
       <p class="author-signature"><a href="https://radujse.online/"</a>{data.kreator}</p>
       
       <!-- Интерактивни Email -->
-      <a href="mailto:{data.kontakt}" class="email-link">
+      <a href={`mailto:${data.kontakt}`} class="email-link">
         <span class="email-text">{data.kontakt}</span>
       </a>
       
