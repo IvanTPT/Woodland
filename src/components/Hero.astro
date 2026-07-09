@@ -1,0 +1,102 @@
+---
+const { data } = Astro.props;
+---
+
+<section class="hero-section" style={`background-image: url('${data.hero_slika}');`}>
+  <div class="overlay"></div>
+  
+  <div class="content">
+    <h1 class="cursive-title">{data.imena}</h1>
+    <h2 class="date-subtitle">{data.datum_prikaz}</h2>
+    <hr class="divider" />
+    
+    <div id="countdown" class="countdown" data-target={data.datum_iso}>
+      <div class="time-box"><span id="days">00</span><small>Дана</small></div>
+      <div class="time-box"><span id="hours">00</span><small>Сати</small></div>
+      <div class="time-box"><span id="minutes">00</span><small>Минута</small></div>
+      <div class="time-box"><span id="seconds">00</span><small>Секунди</small></div>
+    </div>
+  </div>
+
+  <!-- Аудио контрола -->
+  <div class="audio-control">
+    <button id="play-music-btn" class="music-btn">🎵 Пусти музику</button>
+    <audio id="bg-music" loop src={data.muzika_url}></audio>
+  </div>
+
+  <!-- Скрол анимација -->
+  <div id="scroll-indicator" class="scroll-indicator">
+    <span>Скролујте надоле</span>
+    <div class="arrow">↓</div>
+  </div>
+</section>
+
+<script>
+  // Логика за музику
+  const audio = document.getElementById('bg-music') as HTMLAudioElement;
+  const playBtn = document.getElementById('play-music-btn');
+  let isPlaying = false;
+
+  playBtn?.addEventListener('click', () => {
+    if (isPlaying) { audio.pause(); playBtn.textContent = '🎵 Пусти музику'; } 
+    else { audio.play(); playBtn.textContent = '⏸ Паузирај музику'; }
+    isPlaying = !isPlaying;
+  });
+
+  // Скривање скрол индикатора
+  const scrollIndicator = document.getElementById('scroll-indicator');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 100 && scrollIndicator) {
+      scrollIndicator.style.opacity = '0';
+      setTimeout(() => scrollIndicator.style.display = 'none', 300);
+    }
+  });
+
+  // Логика за одбројавање
+  const countdownEl = document.getElementById('countdown');
+  const targetDate = new Date(countdownEl?.dataset.target || '').getTime();
+
+  setInterval(() => {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
+
+    if (distance > 0) {
+      document.getElementById('days')!.innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+      document.getElementById('hours')!.innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+      document.getElementById('minutes')!.innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+      document.getElementById('seconds')!.innerText = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+    }
+  }, 1000);
+</script>
+
+<style>
+  /* Стилови преузети из global.css (.hero-section, .cursive-title итд.) — овде остају само детаљи специфични за ову компоненту. */
+  .audio-control { position: absolute; top: 2rem; right: 2rem; z-index: 10; }
+  .music-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid var(--color-accent-light, rgba(212,175,106,0.6));
+    color: var(--color-text-light);
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: all 0.3s ease;
+  }
+  .music-btn:hover {
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+  }
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    z-index: 10;
+    color: var(--color-text-light);
+    letter-spacing: 0.15em;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+    transition: opacity 0.3s;
+  }
+  .scroll-indicator .arrow { font-size: 1.2rem; margin-top: 0.3rem; }
+  @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+</style>

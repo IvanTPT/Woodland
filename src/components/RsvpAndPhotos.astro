@@ -1,0 +1,324 @@
+---
+const { data, datumVencanja } = Astro.props;
+const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.album_url)}`;
+---
+
+<section class="section alt-bg">
+  <div class="section__inner w-full max-w-6xl mx-auto px-4">
+    <h2 class="section__title">Присуство и Успомене</h2>
+
+    <div class="rsvp-grid">
+      
+      <!-- ЛЕВА СТРАНА: RSVP -->
+      <div class="card rsvp-card">
+        <h2 id="form-title">Потврда доласка</h2>
+          <p class="rsvp-desc">{data.poruka_potvrde}</p>
+        
+        <form id="rsvp-form" class="rsvp-form">
+          <fieldset>
+            <legend>Ваши подаци</legend>
+            <div class="input-group">
+              <label for="firstName">Име</label>
+              <input type="text" id="firstName" name="firstName" required placeholder="Унесите ваше име" />
+            </div>
+            <div class="input-group">
+              <label for="lastName">Презиме</label>
+              <input type="text" id="lastName" name="lastName" required placeholder="Унесите ваше презиме" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Особе које долазе са вама</legend>
+            <div id="guests-container"></div>
+            <button type="button" id="add-guest-btn" class="secondary-btn">
+              + Додај особу
+            </button>
+          </fieldset>
+
+          <button type="submit" id="submit-btn" class="primary-btn">Потврди долазак</button>
+        </form>
+
+        <div id="success-message" class="success-message" style="display: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" class="success-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <h3>Хвала Вам што сте потврдили свој долазак, радујемо се скором виђењу.</h3>
+        </div>
+      </div>
+
+      <!-- ДЕСНА СТРАНА: Фотографије -->
+      <div class="card photo-card">
+        <h2 class="photo-title">Поделите успомене</h2>
+        
+        <div id="photo-message-container">
+          <p class="photo-desc">{data.poruka_pre_vremena}</p>
+          <div class="blur-container">
+            <img src={qrCodeUrl} alt="Замагљен QR код" class="qr-img blur" />
+          </div>
+        </div>
+
+        <div id="photo-qr-container" style="display: none;">
+          <p class="photo-desc">Скенирајте QR код и додајте ваше фотографије!</p>
+          <img src={qrCodeUrl} alt="QR код за албум" class="qr-img active-qr" />
+          <a href={data.album_url} target="_blank" class="album-link">Или кликните овде</a>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- Прослеђујемо датум венчања у JS преко дата атрибута -->
+<div id="wedding-date-data" data-date={datumVencanja} style="display: none;"></div>
+
+<script>
+  // Логика за Фотографије
+  const targetDateStr = document.getElementById('wedding-date-data')?.dataset.date;
+  if(targetDateStr) {
+    const targetDate = new Date(targetDateStr).getTime();
+    const now = new Date().getTime();
+
+    if(now >= targetDate) {
+      const msgContainer = document.getElementById('photo-message-container');
+      const qrContainer = document.getElementById('photo-qr-container');
+      
+      if(msgContainer && qrContainer) {
+        msgContainer.style.display = 'none';
+        qrContainer.style.display = 'block';
+      }
+    }
+  }
+
+  // Логика за RSVP форму
+  const addGuestBtn = document.getElementById('add-guest-btn');
+  const guestsContainer = document.getElementById('guests-container');
+  const rsvpForm = document.getElementById('rsvp-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const formTitle = document.getElementById('form-title');
+  const successMessage = document.getElementById('success-message');
+
+  let guestCount = 0;
+
+  addGuestBtn?.addEventListener('click', () => {
+    guestCount++;
+    const guestDiv = document.createElement('div');
+    guestDiv.className = 'guest-row';
+    guestDiv.innerHTML = `
+      <div class="guest-input-group">
+        <label>Име пратиоца ${guestCount}</label>
+        <input type="text" name="guestFirstName[]" placeholder="Унесите име" required class="guest-input" />
+      </div>
+      <div class="guest-input-group">
+        <label>Презиме пратиоца ${guestCount}</label>
+        <input type="text" name="guestLastName[]" placeholder="Унесите презиме" required class="guest-input" />
+      </div>
+      <button type="button" class="remove-btn" title="Уклони особу">✖</button>
+    `;
+
+    guestDiv.querySelector('.remove-btn')?.addEventListener('click', () => {
+      guestDiv.remove();
+    });
+    guestsContainer?.appendChild(guestDiv);
+  });
+
+  rsvpForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(submitBtn) submitBtn.textContent = 'Шаљем...';
+    
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8izZ0PWNXTl0RREHobK6P3b6NdixRGAnj9dpaTmzQfMtKSY6oZH8AIRiTDKhxemAG/exec'; 
+    
+    const formData = new FormData(rsvpForm as HTMLFormElement);
+    const guestFirstNames = formData.getAll('guestFirstName[]');
+    const guestLastNames = formData.getAll('guestLastName[]');
+
+    let pratioci = [];
+    for (let i = 0; i < guestFirstNames.length; i++) {
+      pratioci.push(`${guestFirstNames[i]} ${guestLastNames[i]}`);
+    }
+
+    const data = {
+      ime: formData.get('firstName'),
+      prezime: formData.get('lastName'),
+      pratioci: pratioci.join(', ')
+    };
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      });
+
+      rsvpForm.style.display = 'none';
+      if(formTitle) formTitle.style.display = 'none';
+      if(successMessage) successMessage.style.display = 'flex';
+    } catch (error) {
+      alert('Дошло је до грешке приликом слања. Покушајте поново.');
+      if(submitBtn) submitBtn.textContent = 'Потврди долазак';
+    }
+  });
+</script>
+
+<style>
+  /* === GLAVNI GRID === */
+  .rsvp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: stretch; /* Garantuje istu visinu kolona */
+    margin-top: 2.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .rsvp-grid {
+      grid-template-columns: 1fr 1fr; /* Deli u dve kolone na desktopu */
+      gap: 3rem;
+    }
+  }
+
+  /* === ZAJEDNICKI STILOVI ZA KARTICE === */
+  .rsvp-card, .photo-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === STILOVI ZA RSVP === */
+  .rsvp-card h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--color-primary);
+    font-size: 2.25rem;
+  }
+
+  .rsvp-form {
+    flex: 1; /* Tera formu da popuni prazan prostor do dugmeta */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rsvp-desc {
+    color: var(--color-text-dark);
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  fieldset { border: none; padding: 0; margin: 0 0 1.5rem 0; }
+  legend { font-weight: 600; margin-bottom: 1rem; color: var(--color-primary); font-size: 1.1rem; }
+  
+  .input-group { display: flex; flex-direction: column; margin-bottom: 1rem; }
+  .input-group label { margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--color-primary); }
+  
+  input { 
+    padding: 0.75rem; 
+    border: 1px solid rgba(181, 141, 104, 0.4);
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 0.5rem; 
+    font-size: 1rem;
+    color: var(--color-text-dark);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--color-accent); }
+  
+  button { cursor: pointer; font-weight: 600; border: none; border-radius: 0.5rem; transition: all 0.3s ease; }
+  
+  .primary-btn { 
+    width: 100%; 
+    padding: 1rem; 
+    background-color: var(--color-primary); 
+    color: var(--color-secondary); 
+    font-size: 1.1rem; 
+    margin-top: auto; /* Gura dugme uvek na dno kartice */
+  }
+  .primary-btn:hover { background-color: var(--color-accent); transform: translateY(-2px); }
+  
+  .secondary-btn { 
+    padding: 0.5rem 1rem; 
+    background-color: var(--color-secondary); 
+    color: var(--color-primary); 
+    border: 1px solid rgba(169, 132, 63, 0.2);
+  }
+  .secondary-btn:hover { background-color: rgba(169, 132, 63, 0.08); }
+
+  .success-message {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .success-icon { width: 60px; height: 60px; color: var(--color-accent); margin-bottom: 1rem; }
+  .success-message h3 { color: var(--color-primary); font-family: var(--font-lato); font-size: 1.25rem;}
+
+  /* === STILOVI ZA FOTOGRAFIJE === */
+  .photo-card {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .photo-title {
+    margin-bottom: 1.5rem;
+    color: var(--color-primary);
+    font-size: 2.25rem;
+  }
+
+  .photo-desc {
+    color: var(--color-text-dark);
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .qr-img {
+    margin: 0 auto;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    background: white;
+  }
+
+  .blur-container {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: blur(4px);
+  }
+
+  .active-qr {
+    border: 2px solid var(--color-accent);
+    transition: transform 0.3s ease;
+  }
+  .active-qr:hover { transform: scale(1.05); }
+
+  .album-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--color-accent);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .album-link:hover { color: var(--color-primary); }
+</style>
+
+<style is:global>
+  /* Gosti (Javascript) */
+  .guest-row {
+    display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 1rem; border-radius: 0.5rem;
+    border: 1px dashed rgba(181, 141, 104, 0.4);
+  }
+  .guest-input-group { display: flex; flex-direction: column; flex: 1; }
+  .guest-input-group label { margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
+  .guest-input { padding: 0.75rem; border: 1px solid rgba(181, 141, 104, 0.4); border-radius: 0.5rem; width: 100%; box-sizing: border-box; }
+  
+  .remove-btn { 
+    background-color: transparent; 
+    color: #e53e3e; 
+    border: 1px solid #e53e3e;
+    padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; height: 42px; 
+    border-radius: 0.5rem;
+  }
+  .remove-btn:hover { background-color: #e53e3e; color: white; }
+</style>

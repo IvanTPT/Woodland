@@ -1,0 +1,58 @@
+# src/data/config.yml
+vencanje:
+  imena: "Петар и Теодора"
+  imena_puna: "Петар Шимуновић & Теодора Вукојевић"
+  datum_iso: "2027-08-29T16:00:00"
+  datum_prikaz: "29. август 2027. године"
+  muzika_url: "/audio/nasa-pesma.mp3"
+  hero_slika: "https://images.pexels.com/photos/17206153/pexels-photo-17206153.jpeg?auto=compress&cs=tinysrgb&w=1920"
+  lokacija: "Woodland Arena"
+
+plan:
+  lokacije:
+    - vreme: "15:00"
+      naziv: "Окупљање гостију"
+      opis: "Woodland Arena — главни улаз"
+    - vreme: "16:00"
+      naziv: "Свечана церемонија"
+      opis: "Woodland Arena — Главна дворана"
+    - vreme: "17:00"
+      naziv: "Коктел добродошлице"
+      opis: "Woodland Arena — Врт"
+    - vreme: "19:00"
+      naziv: "Свечана вечера и прослава"
+      opis: "Woodland Arena — Главна дворана"
+    - vreme: "22:00"
+      naziv: "Журка до зоре"
+      opis: "Woodland Arena — Главна дворана"
+  mapa_embed: "https://www.google.com/maps?q=Woodland+Arena&output=embed"
+
+interakcija:
+  poruka_potvrde: "Молимо вас да свој долазак потврдите до 01. јула 2027"
+  google_script_url: "https://script.google.com/macros/s/AKfycbx8izZ0PWNXTl0RREHobK6P3b6NdixRGAnj9dpaTmzQfMtKSY6oZH8AIRiTDKhxemAG/exec"
+  album_url: "https://photos.app.goo.gl/c2U4wgFD8ifWJXMy9"
+  poruka_pre_vremena: "Албум за дељење фотографија биће доступан на дан нашег венчања. Припремите своје камере!"
+
+citat:
+  slika: "https://images.pexels.com/photos/28920598/pexels-photo-28920598.jpeg?auto=compress&cs=tinysrgb&w=1000"
+  tekst: "Две душе, два срца и једна жеља - да кроз живот идемо заједно!"
+  autor: ""
+
+prica:
+  - godina: "2022"
+    naslov: "Први сусрет"
+    tekst: "Упознали смо се сасвим случајно, и од тог тренутка знали смо да је ово почетак нечег посебног."
+    slika: "https://images.pexels.com/photos/17257623/pexels-photo-17257623.jpeg?auto=compress&cs=tinysrgb&w=800"
+  - godina: "2024"
+    naslov: "Наше прво путовање"
+    tekst: "Заједно смо обишли места о којима смо само сањали, и учврстили оно што нас повезује."
+    slika: "https://images.pexels.com/photos/3601366/pexels-photo-3601366.jpeg?auto=compress&cs=tinysrgb&w=800"
+  - godina: "2026"
+    naslov: "Рекла је да!"
+    tekst: "Тренутак који ћемо заувек памтити — почетак нашег заједничког живота."
+    slika: "https://images.pexels.com/photos/36079282/pexels-photo-36079282.jpeg?auto=compress&cs=tinysrgb&w=800"
+
+footer:
+  kreator: "radujse.online"
+  kontakt: "emediars@gmail.com"
+  godina: "2027"
